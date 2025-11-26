@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - NEWCARGE 360°</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CORE SETUP & ANIMATIONS --- */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: linear-gradient(45deg, #1a1a2e, #16213e, #0f3460);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: floatBlob 10s infinite alternate;
+        }
+
+        .blob-1 { top: 10%; left: 10%; width: 300px; height: 300px; background: #4338ca; animation-duration: 20s; }
+        .blob-2 { bottom: 20%; right: 10%; width: 400px; height: 400px; background: #0ea5e9; animation-duration: 25s; }
+        .blob-3 { top: 40%; left: 40%; width: 350px; height: 350px; background: #ec4899; animation-duration: 22s; }
+
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes floatBlob { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 50px) scale(1.1); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* --- GLASSMORPHISM UTILITIES --- */
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-heavy {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- TYPOGRAPHY & ELEMENTS --- */
+        .neon-text {
+            background: linear-gradient(to right, #60a5fa, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.4));
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+            transition: all 0.3s ease;
+            color: white;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 0 25px rgba(37, 99, 235, 0.6);
+            transform: scale(1.02);
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Form Elements in Glass */
+        input, select, textarea {
+            background: rgba(0, 0, 0, 0.3) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            backdrop-filter: blur(4px);
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #3b82f6 !important;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        /* Placeholder color */
+        ::placeholder { color: rgba(255, 255, 255, 0.4); }
+        
+        /* Dropdown Menu */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 10px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            min-width: 220px;
+            animation: slideDown 0.2s ease-out;
+            z-index: 50;
+        }
+        .dropdown-menu.show { display: block; }
+
+        /* Live Indicator */
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #10B981;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #10B981;
+            animation: pulse 2s infinite;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+        .notification-dot {
+            position: absolute; top: -2px; right: -2px; width: 16px; height: 16px;
+            background: #EF4444; color: white; border-radius: 50%; font-size: 10px;
+            display: flex; align-items: center; justify-content: center; font-weight: bold;
+            box-shadow: 0 0 5px #EF4444;
+        }
+
+        /* --- LIGHT MODE STYLES --- */
+        html.light body {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+        html.light .bg-animation { display: none; }
+        html.light header {
+            background-color: rgba(241, 245, 249, 0.7);
+            border-bottom-color: rgba(0,0,0,0.1);
+        }
+        html.light .glass, html.light .btn-glass {
+            background: rgba(255, 255, 255, 0.6);
+            border-color: rgba(0,0,0,0.1);
+            color: #334155;
+        }
+        html.light .glass-heavy {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(0,0,0,0.1);
+        }
+        html.light .glass-card {
+            background: #ffffff;
+            border-color: rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        html.light .text-white, html.light .text-gray-200, html.light .text-gray-300 { color: #1e293b; }
+        html.light .text-gray-400 { color: #64748b; }
+        html.light .text-gray-500 { color: #475569; }
+        html.light .neon-text {
+            background: linear-gradient(to right, #3b82f6, #1d4ed8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: none;
+        }
+        html.light input, html.light select, html.light textarea { background: #f8fafc !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
+        html.light ::placeholder { color: #94a3b8; }
+        html.light .dropdown-menu { background: rgba(255, 255, 255, 0.95); }
+    </style>
+</head>
+<body>
+
+    <div class="bg-animation">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <header class="sticky top-0 z-40 backdrop-blur-xl bg-slate-900/50 border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex justify-between items-center">
+                <a href="index.html" class="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition">
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-8 h-8 text-blue-500" viewBox="0 0 40 40" fill="none">
+                            <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="2" />
+                            <path d="M15 20L18 23L25 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        <span class="text-xl font-bold tracking-wider text-white">NEWCARGE 360°</span>
+                    </div>
+                </a>
+
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleTheme()" class="btn-glass p-2 rounded-xl">
+                        <svg id="theme-icon-sun" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <svg id="theme-icon-moon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    </button>
+
+                    <div class="relative">
+                        <button onclick="toggleDropdown('lang-dropdown')" class="btn-glass flex items-center space-x-2 px-3 py-2 rounded-xl text-sm">
+                            <span id="current-lang">🇬🇪 GE</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div id="lang-dropdown" class="dropdown-menu overflow-hidden">
+                            <button onclick="changeLanguage('GE', '🇬🇪 GE')" class="w-full text-left px-4 py-3 hover:bg-white/10 transition text-white text-sm">🇬🇪 ქართული</button>
+                            <button onclick="changeLanguage('EN', '🇬🇧 EN')" class="w-full text-left px-4 py-3 hover:bg-white/10 transition text-white text-sm">🇬🇧 English</button>
+                            <button onclick="changeLanguage('RU', '🇷🇺 RU')" class="w-full text-left px-4 py-3 hover:bg-white/10 transition text-white text-sm">🇷🇺 Русский</button>
+                        </div>
+                    </div>
+
+                    <button onclick="toggleNotifications()" class="btn-glass relative p-2 rounded-xl">
+                        <svg class="w-6 h-6 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                        <span class="notification-dot">3</span>
+                    </button>
+
+                    <div class="relative">
+                        <button onclick="toggleDropdown('profile-dropdown')" class="flex items-center space-x-3 p-1 rounded-xl hover:bg-white/5 transition">
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg border border-white/20">
+                                <span id="user-initial">G</span>
+                            </div>
+                            <div class="hidden sm:block text-left mr-2">
+                                <div class="text-sm font-semibold text-white" id="header-user-name">მომხმარებელი</div>
+                                <div class="text-[10px] text-green-400 font-medium flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                    ვერიფიცირებული
+                                </div>
+                            </div>
+                        </button>
+                        <div id="profile-dropdown" class="dropdown-menu overflow-hidden">
+                            <div class="px-4 py-3 border-b border-white/10">
+                                <p class="text-xs text-gray-400">ავტორიზებული როგორც</p>
+                                <p id="dropdown-user-name" class="text-sm font-bold text-white truncate">მომხმარებელი</p>
+                            </div>
+                            <button onclick="showProfileSettings()" class="w-full text-left px-4 py-3 hover:bg-white/10 transition text-gray-300 text-sm">პროფილის პარამეტრები</button>
+                            <button onclick="showPaymentMethods()" class="w-full text-left px-4 py-3 hover:bg-white/10 transition text-gray-300 text-sm">გადახდის მეთოდები</button>
+                            <button onclick="showOrderHistory()" class="w-full text-left px-4 py-3 hover:bg-white/10 transition text-gray-300 text-sm">ისტორია</button>
+                            <div class="border-t border-white/10">
+                                <button onclick="logout()" class="w-full text-left px-4 py-3 text-red-400 hover:bg-red-500/10 transition text-sm">გასვლა</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+        
+        <section class="glass-card p-8 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600 rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/3"></div>
+            <div class="relative z-10">
+                <h1 class="text-3xl sm:text-5xl font-bold mb-4 neon-text" id="welcome-title">გამარჯობა!</h1>
+                <p class="text-lg text-gray-300 mb-8 max-w-2xl font-light" id="welcome-subtitle">თქვენი ავტომობილის ყველა მომსახურება — ერთ სივრცეში. მართეთ სერვისები დისტანციურად.</p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button onclick="showOrderModal()" class="btn-primary px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2">
+                        <span>⚡</span> ახალი შეკვეთა
+                    </button>
+                    <button onclick="showAddVehicleModal()" class="glass bg-white/5 hover:bg-white/10 px-8 py-4 text-white rounded-xl font-semibold transition border border-white/20 flex items-center justify-center gap-2">
+                        <span>🚘</span> ავტომობილის დამატება
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                <span class="w-1 h-6 bg-blue-500 rounded-full"></span> ჩემი გარაჟი
+            </h2>
+            <div id="garage-grid" class="grid gap-6 md:grid-cols-2">
+                <div class="glass-card p-6 border-2 border-dashed border-white/10 hover:border-blue-500/50 transition cursor-pointer flex flex-col items-center justify-center text-center group min-h-[200px]" onclick="showAddVehicleModal()">
+                    <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-600/20 group-hover:scale-110 transition duration-300">
+                        <svg class="w-8 h-8 text-gray-400 group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-white mb-1">ავტომობილის დამატება</h3>
+                    <p class="text-sm text-gray-500">დაამატეთ ახალი მანქანა თქვენს ანგარიშზე</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                <span class="w-1 h-6 bg-purple-500 rounded-full"></span> სერვისები
+            </h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div class="glass-card p-6 text-center cursor-pointer group hover:bg-white/10" onclick="selectService('evacuator')">
+                    <div class="w-14 h-14 mx-auto mb-4 bg-blue-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition">
+                        <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                    </div>
+                    <h3 class="font-semibold text-white">ევაკუატორი</h3>
+                    <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-wider">24/7 მომსახურება</p>
+                </div>
+
+                <div class="glass-card p-6 text-center cursor-pointer group hover:bg-white/10" onclick="selectService('detailing')">
+                    <div class="w-14 h-14 mx-auto mb-4 bg-pink-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition">
+                        <svg class="w-7 h-7 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <h3 class="font-semibold text-white">დითეილინგი</h3>
+                    <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-wider">პრემიუმ ხარისხი</p>
+                </div>
+
+                <div class="glass-card p-6 text-center cursor-pointer group hover:bg-white/10" onclick="selectService('diagnostics')">
+                    <div class="w-14 h-14 mx-auto mb-4 bg-yellow-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition">
+                        <svg class="w-7 h-7 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>
+                    </div>
+                    <h3 class="font-semibold text-white">დიაგნოსტიკა</h3>
+                    <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-wider">სრული შემოწმება</p>
+                </div>
+
+                <div class="glass-card p-6 text-center cursor-pointer group hover:bg-white/10 relative border-green-500/30" onclick="selectService('import')">
+                    <span class="absolute top-3 right-3 bg-green-500 text-black text-[9px] font-bold px-2 py-0.5 rounded-full">NEW</span>
+                    <div class="w-14 h-14 mx-auto mb-4 bg-green-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition">
+                        <svg class="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                    </div>
+                    <h3 class="font-semibold text-white">იმპორტის პაკეტი</h3>
+                    <p class="text-[10px] text-green-400 mt-1 uppercase tracking-wider">სრული სერვისი</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                    <span class="w-1 h-6 bg-orange-500 rounded-full"></span> მიმდინარე შეკვეთები
+                </h2>
+                <button onclick="showOrderHistory()" class="text-sm text-blue-400 hover:text-white transition font-medium">ისტორია &rarr;</button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="glass-card p-6 border-l-4 border-l-blue-500 relative overflow-hidden">
+                    <div class="absolute bottom-0 left-0 h-1 bg-gray-700 w-full">
+                        <div class="h-full bg-gradient-to-r from-blue-500 to-cyan-400 w-[60%] shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                    </div>
+
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <div class="text-xs text-gray-400 mb-1">შეკვეთა #ORD-2024-0847</div>
+                            <h3 class="text-lg font-bold text-white">ევაკუატორის სერვისი</h3>
+                        </div>
+                        <div class="flex items-center space-x-2 bg-green-900/30 px-3 py-1 rounded-full border border-green-500/30">
+                            <span class="live-indicator"></span>
+                            <span class="text-xs font-bold text-green-400 tracking-wider">LIVE</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 text-sm">
+                        <div class="bg-black/20 p-3 rounded-lg">
+                            <span class="text-gray-500 block text-xs mb-1">პარტნიორი</span>
+                            <span class="font-semibold text-gray-200">გიორგი ტრანსპორტი</span>
+                        </div>
+                        <div class="bg-black/20 p-3 rounded-lg">
+                            <span class="text-gray-500 block text-xs mb-1">ფასი</span>
+                            <span class="font-bold text-blue-400">80₾</span>
+                        </div>
+                        <div class="bg-black/20 p-3 rounded-lg">
+                            <span class="text-gray-500 block text-xs mb-1">სტატუსი</span>
+                            <span class="font-semibold text-green-400">გზაშია</span>
+                        </div>
+                        <div class="bg-black/20 p-3 rounded-lg">
+                            <span class="text-gray-500 block text-xs mb-1">დრო</span>
+                            <span class="font-semibold text-white">~12 წთ</span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="showOrderDetails('ORD-2024-0847')" class="flex-1 py-2.5 bg-white/5 text-white border border-white/10 rounded-xl font-semibold hover:bg-white/10 transition text-sm">
+                            დეტალები
+                        </button>
+                        <button onclick="trackOrder('ORD-2024-0847')" class="flex-1 py-2.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-500 transition text-sm shadow-lg shadow-blue-600/20">
+                            📍 ტრეკინგი
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 opacity-60 hover:opacity-100 transition">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-lg font-bold text-white">დითეილინგ სერვისი</h3>
+                        <span class="px-3 py-1 rounded-full bg-gray-700 text-xs text-gray-300">დასრულებული</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-400 mb-4">
+                        <span>Elite Detailing</span>
+                        <span>150₾ • 15 იანვარი</span>
+                    </div>
+                    <button onclick="rateService('ORD-2024-0823')" class="w-full py-2 bg-white/5 text-gray-300 rounded-lg text-sm hover:bg-white/10 transition">
+                        ⭐ შეაფასეთ სერვისი
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="notifications-panel" class="hidden fixed top-20 right-4 w-96 max-w-[90vw] glass-heavy rounded-2xl shadow-2xl z-50 border border-white/10 animate-fade-in-up">
+        <div class="p-4 border-b border-white/10 flex justify-between items-center">
+            <h3 class="text-lg font-bold text-white">შეტყობინებები</h3>
+            <button onclick="toggleNotifications()" class="text-gray-400 hover:text-white">&times;</button>
+        </div>
+        <div class="max-h-80 overflow-y-auto p-2">
+            <div class="p-3 hover:bg-white/5 rounded-xl transition cursor-pointer border-b border-white/5">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center flex-shrink-0">ℹ️</div>
+                    <div>
+                        <p class="text-sm font-semibold text-white">ევაკუატორი გზაშია</p>
+                        <p class="text-xs text-gray-400 mt-1">მისვლის დრო: ~12 წუთი</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-3 hover:bg-white/5 rounded-xl transition cursor-pointer">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center flex-shrink-0">✅</div>
+                    <div>
+                        <p class="text-sm font-semibold text-white">შეკვეთა დასრულდა</p>
+                        <p class="text-xs text-gray-400 mt-1">დითეილინგი • 150₾</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-widget">
+        <button onclick="toggleChat()" class="bg-gradient-to-r from-blue-600 to-indigo-600 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg shadow-blue-600/40 hover:scale-110 transition relative border border-white/20">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+            <span class="live-indicator absolute top-3 right-3 border-2 border-slate-900"></span>
+        </button>
+        
+        <div id="chat-window" class="hidden glass-heavy rounded-2xl shadow-2xl w-80 overflow-hidden mb-4 animate-slide-in-up border border-white/10">
+            <div class="bg-blue-600/90 p-4 text-white flex justify-between items-center backdrop-blur-md">
+                <div class="flex items-center gap-2 font-bold">
+                    <span>🤖</span> Assistant
+                </div>
+                <button onclick="toggleChat()" class="hover:text-gray-200">&times;</button>
+            </div>
+            <div class="h-64 p-4 overflow-y-auto bg-black/20 space-y-3">
+                <div class="bg-white/10 p-3 rounded-xl rounded-tl-none text-sm text-gray-200 border border-white/5">
+                    გამარჯობა! რით შემიძლია დაგეხმაროთ?
+                </div>
+            </div>
+            <div class="p-3 border-t border-white/10 bg-black/30">
+                <div class="flex gap-2">
+                    <input type="text" placeholder="მოგვწერეთ..." class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none">
+                    <button class="p-2 bg-blue-600 rounded-lg text-white hover:bg-blue-500 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-container"></div>
+
+    <script>
+        // --- THEME SWITCHER LOGIC ---
+        const sunIcon = document.getElementById('theme-icon-sun');
+        const moonIcon = document.getElementById('theme-icon-moon');
+
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.documentElement.classList.add('light');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            } else {
+                document.documentElement.classList.remove('light');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            }
+        }
+
+        function toggleTheme() {
+            const isLight = document.documentElement.classList.contains('light');
+            const newTheme = isLight ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { applyTheme(localStorage.getItem('theme') || 'dark'); });
+
+        // --- PAGE INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const userName = sessionStorage.getItem('userName');
+            if (userName) {
+                // Update UI with user's name
+                document.getElementById('welcome-title').textContent = `გამარჯობა, ${userName}!`;
+                document.getElementById('header-user-name').textContent = userName;
+                document.getElementById('dropdown-user-name').textContent = userName;
+                if (userName.length > 0) {
+                    document.getElementById('user-initial').textContent = userName.charAt(0).toUpperCase();
+                }
+            } else {
+                // If not logged in, redirect to the main page
+                window.location.href = 'luka.html';
+            }
+        });
+
+
+        // Global Variables & Data
+        const uploadedPhotos = [];
+        const selectedServices = [];
+        const carBrands = {
+            'Toyota': ['Camry', 'Corolla', 'RAV4', 'Prius', 'Land Cruiser'],
+            'BMW': ['3 Series', '5 Series', 'X5', 'X6', 'M4'],
+            'Mercedes': ['C-Class', 'E-Class', 'S-Class', 'G-Wagon'],
+            'Ford': ['Mustang', 'F-150', 'Explorer'],
+            'Hyundai': ['Elantra', 'Sonata', 'Tucson']
+        };
+
+        // UI Toggles
+        function toggleDropdown(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('show');
+        }
+        function toggleNotifications() {
+            const el = document.getElementById('notifications-panel');
+            el.classList.toggle('hidden');
+        }
+        function toggleChat() {
+            const el = document.getElementById('chat-window');
+            el.classList.toggle('hidden');
+        }
+        function closeModal(e) {
+            if(!e || e.target === e.currentTarget) {
+                document.getElementById('modal-container').innerHTML = '';
+            }
+        }
+
+        // Notifications
+        function showNotification(msg) {
+            const div = document.createElement('div');
+            div.className = 'fixed top-4 right-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl shadow-2xl z-[60] border border-white/20 backdrop-blur-md animate-slide-in-up flex items-center gap-3';
+            div.innerHTML = `<span>🔔</span> <span>${msg}</span>`;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+
+        // Order Modal
+        function showOrderModal() {
+            selectedServices.length = 0;
+            const modal = `
+            <div class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onclick="closeModal(event)">
+                <div class="glass-heavy w-full max-w-lg p-8 rounded-2xl relative border border-white/10 animate-slide-in-up" onclick="event.stopPropagation()">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-white">ახალი შეკვეთა</h2>
+                        <button onclick="closeModal()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                    </div>
+                    
+                    <div class="space-y-5">
+                        <div>
+                            <label class="text-gray-300 text-sm block mb-2">აირჩიეთ ავტომობილი</label>
+                            <select class="w-full p-3 rounded-xl">
+                                <option>Toyota Camry 2020 - AB-123-CD</option>
+                                <option>სხვა...</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-gray-300 text-sm block mb-2">სერვისები</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button onclick="toggleService(this, 'evacuator')" class="p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-left transition flex items-center gap-3 group">
+                                    <span class="text-2xl">🚜</span> <span class="text-sm font-semibold text-gray-200 group-hover:text-white">ევაკუატორი</span>
+                                </button>
+                                <button onclick="toggleService(this, 'detailing')" class="p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-left transition flex items-center gap-3 group">
+                                    <span class="text-2xl">✨</span> <span class="text-sm font-semibold text-gray-200 group-hover:text-white">დითეილინგი</span>
+                                </button>
+                                <button onclick="toggleService(this, 'diagnostics')" class="p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-left transition flex items-center gap-3 group">
+                                    <span class="text-2xl">🔍</span> <span class="text-sm font-semibold text-gray-200 group-hover:text-white">დიაგნოსტიკა</span>
+                                </button>
+                                <button onclick="toggleService(this, 'oil')" class="p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-left transition flex items-center gap-3 group">
+                                    <span class="text-2xl">🛢️</span> <span class="text-sm font-semibold text-gray-200 group-hover:text-white">ზეთის შეცვლა</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-gray-300 text-sm block mb-2">სასწრაფოობა</label>
+                            <div class="flex gap-2">
+                                <button onclick="selectUrgency(this)" class="flex-1 p-2 rounded-lg border border-white/10 bg-white/5 text-sm hover:bg-green-500/20 hover:border-green-500/50 transition">არა-სასწრაფო</button>
+                                <button onclick="selectUrgency(this)" class="flex-1 p-2 rounded-lg border border-white/10 bg-white/5 text-sm hover:bg-yellow-500/20 hover:border-yellow-500/50 transition">საშუალო</button>
+                                <button onclick="selectUrgency(this)" class="flex-1 p-2 rounded-lg border border-white/10 bg-white/5 text-sm hover:bg-red-500/20 hover:border-red-500/50 transition">სასწრაფო</button>
+                            </div>
+                        </div>
+
+                        <button onclick="submitOrder()" class="w-full btn-primary py-3 rounded-xl font-bold mt-4">შეკვეთის გაფორმება</button>
+                    </div>
+                </div>
+            </div>`;
+            document.getElementById('modal-container').innerHTML = modal;
+        }
+
+        function toggleService(btn, type) {
+            btn.classList.toggle('bg-blue-600/20');
+            btn.classList.toggle('border-blue-500');
+            if(selectedServices.includes(type)) {
+                selectedServices.splice(selectedServices.indexOf(type), 1);
+            } else {
+                selectedServices.push(type);
+            }
+        }
+
+        function selectUrgency(btn) {
+            const siblings = btn.parentNode.children;
+            for(let sib of siblings) {
+                sib.classList.remove('bg-white/20', 'border-white');
+            }
+            btn.classList.add('bg-white/20', 'border-white');
+        }
+
+        function submitOrder() {
+            closeModal();
+            showNotification('შეკვეთა წარმატებით გაიგზავნა! 🚀');
+        }
+
+        // Add Vehicle Modal
+        function showAddVehicleModal() {
+            const brandsHtml = Object.keys(carBrands).map(b => `<option value="${b}">${b}</option>`).join('');
+            const modal = `
+            <div class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onclick="closeModal(event)">
+                <div class="glass-heavy w-full max-w-lg p-8 rounded-2xl relative border border-white/10 animate-slide-in-up max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-white">მანქანის დამატება</h2>
+                        <button onclick="closeModal()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                    </div>
+                    
+                    <form onsubmit="submitVehicle(event)" class="space-y-5">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-gray-300 text-xs block mb-1">მარკა</label>
+                                <select class="w-full p-3 rounded-xl bg-black/30 border border-white/10 text-white" onchange="updateModels(this)">
+                                    <option value="">აირჩიეთ...</option>
+                                    ${brandsHtml}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-gray-300 text-xs block mb-1">მოდელი</label>
+                                <select id="model-select" class="w-full p-3 rounded-xl bg-black/30 border border-white/10 text-white" disabled>
+                                    <option>ჯერ მარკა...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-gray-300 text-xs block mb-1">VIN კოდი</label>
+                            <input type="text" placeholder="17 ნიშნა კოდი" class="w-full p-3 rounded-xl uppercase font-mono tracking-widest">
+                        </div>
+
+                        <div>
+                            <label class="text-gray-300 text-xs block mb-1">ფოტოები (მინ. 4)</label>
+                            <div class="border-2 border-dashed border-white/10 rounded-xl p-6 text-center hover:bg-white/5 transition cursor-pointer relative">
+                                <input type="file" multiple class="absolute inset-0 opacity-0 cursor-pointer" onchange="handleFiles(this)">
+                                <div class="text-2xl mb-2">📸</div>
+                                <div class="text-sm text-gray-400">დააჭირეთ ასატვირთად</div>
+                                <div id="file-count" class="text-xs text-blue-400 mt-2"></div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full btn-primary py-3 rounded-xl font-bold">დამატება</button>
+                    </form>
+                </div>
+            </div>`;
+            document.getElementById('modal-container').innerHTML = modal;
+        }
+
+        function createVehicleCard(brand, model, plate, vin) {
+            const card = document.createElement('div');
+            card.className = 'glass-card p-6 group';
+            card.innerHTML = `
+                <div class="flex items-start space-x-5">
+                    <div class="w-24 h-24 glass bg-black/20 rounded-2xl flex items-center justify-center flex-shrink-0 border border-white/10 group-hover:border-blue-500/50 transition">
+                        <svg class="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold text-white group-hover:text-blue-400 transition">${brand} ${model}</h3>
+                        <div class="space-y-2 text-sm text-gray-400 mt-3">
+                            <div class="flex items-center bg-black/20 px-3 py-1.5 rounded-lg w-fit">
+                                <span class="text-gray-500 mr-2">ნომერი:</span> 
+                                <span class="text-white font-mono">${plate}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-gray-500 mr-2 w-16">VIN:</span> 
+                                <span class="font-mono">${vin}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex gap-3">
+                    <button onclick="showOrderModal()" class="flex-1 py-2.5 bg-blue-600/20 text-blue-400 border border-blue-600/30 rounded-xl font-semibold hover:bg-blue-600 hover:text-white transition text-sm">
+                        სერვისის შეკვეთა
+                    </button>
+                    <button onclick="deleteVehicle(this)" class="py-2.5 px-4 bg-red-900/50 text-red-400 border border-red-500/30 rounded-xl font-semibold hover:bg-red-500 hover:text-white transition text-sm">
+                        წაშლა
+                    </button>
+                </div>
+            `;
+            return card;
+        }
+
+        function updateModels(select) {
+            const modelSelect = document.getElementById('model-select');
+            const brand = select.value;
+            if(brand && carBrands[brand]) {
+                modelSelect.innerHTML = carBrands[brand].map(m => `<option>${m}</option>`).join('');
+                modelSelect.disabled = false;
+            } else {
+                modelSelect.innerHTML = '<option>ჯერ მარკა...</option>';
+                modelSelect.disabled = true;
+            }
+        }
+
+        function handleFiles(input) {
+            const count = input.files.length;
+            document.getElementById('file-count').innerText = `${count} ფოტო არჩეულია`;
+        }
+
+        function submitVehicle(e) {
+            e.preventDefault();
+            closeModal();
+            showNotification('მანქანა დამატებულია! 🎉');
+        }
+
+        function deleteVehicle(button) {
+            const card = button.closest('.glass-card');
+            card.style.transition = 'opacity 0.5s, transform 0.5s';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.9)';
+            setTimeout(() => card.remove(), 500);
+            showNotification('ავტომობილი წაიშალა.');
+        }
+
+        // Helpers
+        function changeLanguage(lang, text) {
+            document.getElementById('current-lang').innerText = text;
+            showNotification(`ენა შეცვლილია: ${text}`);
+            toggleDropdown('lang-dropdown');
+        }
+        function logout() {
+            sessionStorage.removeItem('userName');
+            showNotification('გამოდიხართ სისტემიდან...');
+            setTimeout(() => window.location.href = 'luka.html', 1000);
+        }
+        function selectService(type) {
+            showNotification(`${type} არჩეულია`);
+            setTimeout(showOrderModal, 500);
+        }
+        function showOrderHistory() { showNotification('ისტორია იტვირთება...'); }
+        function showProfileSettings() { showNotification('პროფილის პარამეტრები'); }
+        function showPaymentMethods() { showNotification('გადახდის მეთოდები'); }
+        function showOrderDetails(id) { showNotification(`დეტალები: ${id}`); }
+        function trackOrder(id) { showNotification(`GPS ტრეკინგი ჩართულია`); }
+        function rateService(id) { showNotification('გმადლობთ შეფასებისთვის! ⭐'); }
+
+    </script>
+</body>
+</html>

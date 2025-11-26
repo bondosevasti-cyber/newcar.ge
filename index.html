@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEWCARGE.COM - NewCarGe Hub 360°</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CORE SETUP --- */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: #0f172a; /* Dark fallback */
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* --- ANIMATED BACKGROUND (Lava Lamp Effect) --- */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: linear-gradient(45deg, #1a1a2e, #16213e, #0f3460);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: floatBlob 10s infinite alternate;
+        }
+
+        .blob-1 { top: 10%; left: 10%; width: 300px; height: 300px; background: #4338ca; animation-duration: 20s; }
+        .blob-2 { bottom: 20%; right: 10%; width: 400px; height: 400px; background: #0ea5e9; animation-duration: 25s; }
+        .blob-3 { top: 40%; left: 40%; width: 350px; height: 350px; background: #ec4899; animation-duration: 22s; }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes floatBlob {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 50px) scale(1.1); }
+        }
+
+        /* --- SCROLL SNAP SETUP (IMPROVED) --- */
+        #main-container {
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory; /* Strict snapping */
+            height: 100vh;
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
+
+        section {
+            scroll-snap-align: start;
+            scroll-snap-stop: always; /* Forces stop at each section */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 2rem 0;
+            box-sizing: border-box;
+        }
+
+        /* --- ANIMATION CLASSES (Scroll Reveal) --- */
+        /* საწყისი მდგომარეობა: უხილავი, დაბლა ჩაწეული, ბლარით */
+        .reveal-element {
+            opacity: 0;
+            transform: translateY(50px) scale(0.95);
+            filter: blur(10px);
+            transition: all 1s cubic-bezier(0.2, 0.8, 0.2, 1); /* Smooth 'Out-Quart' easing */
+        }
+
+        /* გამოჩენის კლასი (JS ამატებს) */
+        .reveal-element.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+        }
+
+        /* --- GLASSMORPHISM UTILITIES --- */
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-heavy {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* For animation system */
+            will-change: transform, opacity, filter; 
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            z-index: 10;
+        }
+
+        /* --- TYPOGRAPHY & ELEMENTS --- */
+        h1, h2, h3 {
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .neon-text {
+            background: linear-gradient(to right, #60a5fa, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.5);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 0 25px rgba(37, 99, 235, 0.8);
+            transform: scale(1.05);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-outline:hover {
+            border-color: white;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 0 15px rgba(255,255,255,0.2);
+        }
+
+        /* --- UTILS --- */
+        .live-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #10B981;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #10B981;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Modal styling */
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+        }
+
+        /* --- LIGHT MODE STYLES --- */
+        html.light body {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+        html.light .bg-animation { display: none; }
+        html.light .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        html.light .glass-heavy {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        html.light .glass-card {
+            background: #ffffff;
+            border-color: rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        html.light .glass-card:hover {
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        html.light h1, html.light h2, html.light h3, html.light span, html.light div, html.light p, html.light a, html.light button, html.light footer {
+            color: inherit;
+        }
+        html.light .text-white, html.light #logo-text, html.light #user-name { color: #1e293b !important; }
+        html.light .text-gray-200 { color: #475569 !important; }
+        html.light .text-gray-400 { color: #64748b !important; }
+        html.light .text-blue-300 { color: #3b82f6 !important; }
+        html.light .neon-text {
+            background: linear-gradient(to right, #3b82f6, #1d4ed8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: none;
+        }
+        html.light .btn-outline { border-color: #94a3b8; color: #334155; }
+        html.light .btn-outline:hover { background: #e2e8f0; }
+        html.light .modal-backdrop { background: rgba(241, 245, 249, 0.8); }
+        html.light input {
+            color: #0f172a !important;
+        }
+    </style>
+    <style>
+        /* --- PROFILE DROPDOWN --- */
+        #profile-dropdown {
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.2s ease-out;
+        }
+        #profile-dropdown.show {
+            display: block;
+        }
+        #user-name-button svg {
+            transition: transform 0.2s ease;
+        }
+        #user-name-button.open svg {
+            transform: rotate(180deg);
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="bg-animation">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 p-4">
+        <div class="glass rounded-2xl max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="luka.html" class="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition">
+                <div class="flex items-center space-x-3">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-blue-500 blur-md opacity-50 rounded-full"></div>
+                        <svg class="w-8 h-8 relative z-10 text-white" viewBox="0 0 40 40" fill="none">
+                            <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="2" />
+                            <path d="M15 20L18 23L25 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    <span id="logo-text" class="text-xl font-bold tracking-wider">NEWCARGE 360°</span>
+                </div>
+            </a>
+            <div class="flex items-center space-x-6">
+                <button onclick="toggleTheme()" class="glass p-2 rounded-xl hover:bg-white/20 transition">
+                    <svg id="theme-icon-sun" class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg id="theme-icon-moon" class="w-5 h-5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+                <!-- Auth Buttons: Visible when logged out -->
+                <div id="auth-buttons" class="flex items-center space-x-4">
+                    <button onclick="showRegisterModal()" class="btn-outline px-5 py-2 rounded-xl text-sm font-semibold">რეგისტრაცია</button>
+                    <button onclick="showLoginModal()" class="btn-primary px-5 py-2 rounded-xl text-white text-sm font-semibold">შესვლა</button>
+                </div>
+                <!-- User Profile: Visible when logged in -->
+                <div id="user-profile" class="hidden items-center space-x-4 relative">
+                    <button onclick="toggleProfileDropdown(event)" id="user-name-button" class="font-semibold text-white cursor-pointer flex items-center gap-2 hover:opacity-80 transition">
+                        <span id="user-name"></span>
+                        <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="profile-dropdown" class="hidden absolute top-full right-0 mt-3 w-56 glass rounded-xl shadow-2xl py-2 z-50 border border-white/10">
+                        <a href="profile.html" class="block w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-white/10 transition">პროფილზე გადასვლა</a>
+                        <button onclick="handleLogout()" class="w-full text-left block px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition">გასვლა</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+<div id="main-container">
+    <section class="flex items-center justify-center relative">
+        <div class="max-w-7xl mx-auto px-4 text-center z-10">
+            <div class="glass-card inline-block px-4 py-1 mb-6 rounded-full border border-blue-400/30 reveal-element">
+                <span class="text-blue-300 text-sm font-medium tracking-wide">🚀 მომავლის სერვისი დღეს</span>
+            </div>
+            
+            <h1 id="hero-title" class="text-5xl sm:text-7xl font-extrabold mb-8 leading-tight tracking-tight reveal-element" style="transition-delay: 100ms;">
+                ავტომობილის დისტანციური<br>
+                <span class="neon-text">მოსახურება 360°</span>
+            </h1>
+            
+            <p id="hero-subtitle" class="text-lg sm:text-2xl mb-12 text-gray-200 max-w-3xl mx-auto font-light reveal-element" style="transition-delay: 200ms;">
+                ევაკუატორი, დითეილინგი, დიაგნოსტიკა, იმპორტირებული ავტომობილის პაკეტი — ყველაფერი ერთი ეკოსისტემაში.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row justify-center gap-6 reveal-element" style="transition-delay: 300ms;">
+                <button onclick="showPartnerModal()" class="glass-card px-10 py-5 text-xl font-bold hover:bg-white/10 flex items-center justify-center gap-3 group">
+                    გახდი პარტნიორი
+                    <svg class="w-6 h-6 transform group-hover:translate-x-2 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="max-w-7xl mx-auto px-4 w-full">
+            <h2 class="text-3xl font-bold text-center mb-16 opacity-80 reveal-element">პლატფორმის მონაცემები</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 stagger-container">
+                
+                <div class="glass-card p-8 text-center relative overflow-hidden group reveal-element">
+                    <div class="absolute -top-10 -right-10 w-24 h-24 bg-blue-500 blur-2xl opacity-20 group-hover:opacity-40 transition"></div>
+                    <div id="stat-users" class="text-4xl font-bold text-white mb-2">12,482+</div>
+                    <div class="text-gray-400 font-medium">რეგისტრირებული მომხმარებელი</div>
+                </div>
+
+                <div class="glass-card p-8 text-center relative overflow-hidden group reveal-element">
+                    <div class="absolute -top-10 -left-10 w-24 h-24 bg-purple-500 blur-2xl opacity-20 group-hover:opacity-40 transition"></div>
+                    <div id="stat-partners" class="text-4xl font-bold text-white mb-2">240+</div>
+                    <div class="text-gray-400 font-medium">ვერიფიცირებული პარტნიორი</div>
+                </div>
+
+                <div class="glass-card p-8 text-center relative overflow-hidden group reveal-element">
+                    <div class="absolute -bottom-10 -right-10 w-24 h-24 bg-green-500 blur-2xl opacity-20 group-hover:opacity-40 transition"></div>
+                    <div id="stat-orders" class="text-4xl font-bold text-white mb-2">6,921</div>
+                    <div class="text-gray-400 font-medium">შესრულებული შეკვეთა</div>
+                </div>
+
+                <div class="glass-card p-8 text-center relative overflow-hidden border-green-500/30 reveal-element">
+                    <div class="flex justify-center items-center mb-2 gap-2">
+                        <span class="live-indicator"></span>
+                        <span class="text-green-400 text-sm font-bold tracking-wider">LIVE</span>
+                    </div>
+                    <div id="stat-live" class="text-4xl font-bold text-green-400">42</div>
+                    <div class="text-gray-400 font-medium">მიმდინარე შეკვეთა</div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="max-w-7xl mx-auto px-4 w-full">
+            <h2 class="text-4xl font-bold text-center mb-16 neon-text reveal-element">სწრაფი სერვისები</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 stagger-container">
+                
+                <button onclick="showServiceInfo('evacuator')" class="glass-card p-6 flex flex-col items-center justify-center gap-4 group h-48 reveal-element">
+                    <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-blue-600/20 transition">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                    </div>
+                    <span class="font-semibold text-gray-200 group-hover:text-white">ევაკუატორი</span>
+                </button>
+
+                <button onclick="showServiceInfo('detailing')" class="glass-card p-6 flex flex-col items-center justify-center gap-4 group h-48 reveal-element">
+                    <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-pink-600/20 transition">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <span class="font-semibold text-gray-200 group-hover:text-white">დითეილინგი</span>
+                </button>
+
+                <button onclick="showServiceInfo('diagnostics')" class="glass-card p-6 flex flex-col items-center justify-center gap-4 group h-48 reveal-element">
+                    <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-yellow-600/20 transition">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>
+                    </div>
+                    <span class="font-semibold text-gray-200 group-hover:text-white">დიაგნოსტიკა</span>
+                </button>
+
+                <button onclick="showServiceInfo('oil-change')" class="glass-card p-6 flex flex-col items-center justify-center gap-4 group h-48 reveal-element">
+                    <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-orange-600/20 transition">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                    </div>
+                    <span class="font-semibold text-gray-200 group-hover:text-white">ზეთის შეცვლა</span>
+                </button>
+
+                <button onclick="showServiceInfo('tires')" class="glass-card p-6 flex flex-col items-center justify-center gap-4 group h-48 reveal-element">
+                    <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-gray-600/20 transition">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" /><circle cx="12" cy="12" r="6" stroke="currentColor" stroke-width="2" /><circle cx="12" cy="12" r="2" fill="currentColor" /></svg>
+                    </div>
+                    <span class="font-semibold text-gray-200 group-hover:text-white">საბურავები</span>
+                </button>
+
+                <button onclick="showServiceInfo('import-package')" class="glass-card p-6 flex flex-col items-center justify-center gap-4 group h-48 relative border-green-400/30 reveal-element">
+                    <span class="absolute top-3 right-3 bg-green-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">NEW</span>
+                    <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-green-600/20 transition">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                    </div>
+                    <span class="font-semibold text-gray-200 group-hover:text-white">იმპორტის პაკეტი</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="max-w-7xl mx-auto px-4 w-full">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                
+                <div class="glass-card p-10 transform hover:scale-[1.01] transition-all reveal-element">
+                    <div class="flex items-center mb-8">
+                        <div class="p-3 bg-blue-500/20 rounded-xl mr-4">
+                            <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                        </div>
+                        <h2 class="text-3xl font-bold">პარტნიორების პანელი</h2>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <button onclick="showPartnerModal()" class="w-full glass bg-white/5 p-4 rounded-xl hover:bg-white/10 transition text-left flex items-center group">
+                            <svg class="w-6 h-6 text-blue-400 mr-4 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                            <div>
+                                <div class="font-semibold">გახდი პარტნიორი</div>
+                                <div class="text-sm text-gray-400">სწრაფი რეგისტრაცია</div>
+                            </div>
+                        </button>
+                        
+                        <button onclick="showAnalytics()" class="w-full btn-primary p-4 rounded-xl font-semibold flex items-center justify-center gap-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                            ანალიტიკა & სტატისტიკა 
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-6 stagger-container">
+                    <h3 class="text-4xl font-bold mb-8 reveal-element">რატომ <span class="text-blue-400">NewCarGe?</span></h3>
+                    
+                    <div class="glass p-6 rounded-2xl flex items-start gap-4 reveal-element">
+                        <div class="p-2 bg-blue-500/20 rounded-lg text-blue-400 mt-1">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold mb-2">Real-time GPS Tracking</h4>
+                            <p class="text-gray-400 text-sm">თვალი ადევნეთ თქვენს მანქანას რეალურ დროში და იცოდეთ ზუსტი მდებარეობა.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass p-6 rounded-2xl flex items-start gap-4 reveal-element">
+                        <div class="p-2 bg-purple-500/20 rounded-lg text-purple-400 mt-1">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold mb-2">100% Transparent Pricing</h4>
+                            <p class="text-gray-400 text-sm">გამჭვირვალე ფასები, ფარული დანამატების გარეშე.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass p-6 rounded-2xl flex items-start gap-4 reveal-element">
+                        <div class="p-2 bg-green-500/20 rounded-lg text-green-400 mt-1">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold mb-2">6-Month Guarantee</h4>
+                            <p class="text-gray-400 text-sm">6 თვიანი გარანტია ყველა სერვისზე.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section style="height: auto; min-height: 100vh; scroll-snap-align: start;">
+        <footer class="glass-heavy text-white py-12 rounded-t-3xl mx-4 reveal-element">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 mb-12">
+                    <div>
+                        <h4 class="font-bold mb-4 text-blue-400">About</h4>
+                        <ul class="space-y-2 text-gray-400 text-sm">
+                            <li><a href="#" class="hover:text-white transition">ჩვენ შესახებ</a></li>
+                            <li><a href="#" class="hover:text-white transition">მისია</a></li>
+                            <li><a href="#" class="hover:text-white transition">გუნდი</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold mb-4 text-blue-400">Partners</h4>
+                        <ul class="space-y-2 text-gray-400 text-sm">
+                            <li><a href="#" class="hover:text-white transition">გახდი პარტნიორი</a></li>
+                            <li><a href="#" class="hover:text-white transition">პარტნიორობა</a></li>
+                            <li><a href="#" class="hover:text-white transition">ვაკანსიები</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold mb-4 text-blue-400">Help</h4>
+                        <ul class="space-y-2 text-gray-400 text-sm">
+                            <li><a href="#" class="hover:text-white transition">დახმარება</a></li>
+                            <li><a href="#" class="hover:text-white transition">FAQ</a></li>
+                            <li><a href="#" class="hover:text-white transition">Support</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold mb-4 text-blue-400">Contact</h4>
+                        <ul class="space-y-2 text-gray-400 text-sm">
+                            <li><a href="#" class="hover:text-white transition">კონტაქტი</a></li>
+                            <li><a href="#" class="hover:text-white transition">ტელეფონი</a></li>
+                            <li><a href="#" class="hover:text-white transition">მისამართი</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold mb-4 text-blue-400">Legal</h4>
+                        <ul class="space-y-2 text-gray-400 text-sm">
+                            <li><a href="#" class="hover:text-white transition">Terms</a></li>
+                            <li><a href="#" class="hover:text-white transition">Privacy</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold mb-4 text-blue-400">Language</h4>
+                        <ul class="space-y-2 text-gray-400 text-sm">
+                            <li><button onclick="changeLanguage('GE')" class="hover:text-white transition text-left w-full">🇬🇪 ქართული</button></li>
+                            <li><button onclick="changeLanguage('EN')" class="hover:text-white transition text-left w-full">🇬🇧 English</button></li>
+                            <li><button onclick="changeLanguage('RU')" class="hover:text-white transition text-left w-full">🇷🇺 Русский</button></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="border-t border-gray-700 pt-8 flex justify-center">
+                    <p class="text-gray-500 text-sm">© 2024 NEWCARGE.COM - NewCarGe Hub 360°. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </section>
+</div>
+
+    <div class="fixed bottom-6 right-6 z-50">
+        <button onclick="toggleChatWindow()" class="w-16 h-16 rounded-full bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/50 flex items-center justify-center transition transform hover:scale-110 relative border border-white/20">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+            <span class="absolute top-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900 animate-pulse"></span>
+        </button>
+
+        <div id="chat-window" class="hidden absolute bottom-20 right-0 w-80 glass-heavy rounded-2xl overflow-hidden shadow-2xl border border-white/10 animate-fade-in-up">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-800 p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-bold text-white flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                        NewCarGe AI
+                    </h3>
+                    <button onclick="toggleChatWindow()" class="text-white/70 hover:text-white">&times;</button>
+                </div>
+                <div class="flex gap-2">
+                    <button class="flex-1 bg-white/20 py-1 px-2 rounded text-xs font-semibold hover:bg-white/30 transition text-white">AI Mode</button>
+                    <button class="flex-1 bg-transparent py-1 px-2 rounded text-xs font-semibold hover:bg-white/10 transition text-white border border-white/20 flex justify-center items-center gap-1"><span class="w-2 h-2 bg-green-400 rounded-full"></span> Live</button>
+                </div>
+            </div>
+            <div class="p-4 space-y-2 h-64 overflow-y-auto">
+                <div class="bg-white/10 p-3 rounded-lg rounded-tl-none text-sm text-gray-200">
+                    გამარჯობა! რით შემიძლია დაგეხმაროთ დღეს?
+                </div>
+            </div>
+            <div class="p-3 border-t border-white/10">
+                <input type="text" placeholder="მოგვწერეთ..." class="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-container"></div>
+
+    <script>
+        // --- ANIMATION LOGIC (INTERSECTION OBSERVER) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Setup Stagger Delays for Grids
+            // This automatically adds delay to cards inside grids so they appear one by one
+            const staggerContainers = document.querySelectorAll('.stagger-container');
+            staggerContainers.forEach(container => {
+                const children = container.querySelectorAll('.reveal-element');
+                children.forEach((child, index) => {
+                    // Add increasing delay (100ms, 200ms, 300ms...)
+                    child.style.transitionDelay = `${index * 100}ms`;
+                });
+            });
+
+            // 2. Create Observer
+            const observerOptions = {
+                root: null, // viewport
+                rootMargin: '0px',
+                threshold: 0.15 // Trigger when 15% of element is visible
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        // Optional: Unobserve after showing to run only once
+                        // observer.unobserve(entry.target);
+                    } else {
+                        // Else: remove 'active' class to allow re-animation on scroll
+                        entry.target.classList.remove('active');
+                    }
+                });
+            }, observerOptions);
+
+            // 3. Observe all reveal elements
+            const revealElements = document.querySelectorAll('.reveal-element');
+            revealElements.forEach(el => observer.observe(el));
+        });
+
+        // --- THEME SWITCHER LOGIC ---
+        const sunIcon = document.getElementById('theme-icon-sun');
+        const moonIcon = document.getElementById('theme-icon-moon');
+
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.documentElement.classList.add('light');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            } else {
+                document.documentElement.classList.remove('light');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            }
+        }
+
+        function toggleTheme() {
+            const isLight = document.documentElement.classList.contains('light');
+            const newTheme = isLight ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { applyTheme(localStorage.getItem('theme') || 'dark'); });
+
+        // --- AUTHENTICATION UI LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const userName = sessionStorage.getItem('userName');
+            if (userName) {
+                updateHeaderUI(userName);
+            }
+        });
+
+        function updateHeaderUI(userName) {
+            const authButtons = document.getElementById('auth-buttons');
+            const userProfile = document.getElementById('user-profile');
+            const userNameEl = document.getElementById('user-name');
+
+            authButtons.classList.add('hidden');
+            userProfile.classList.remove('hidden');
+            userProfile.classList.add('flex');
+            userNameEl.textContent = userName;
+        }
+
+        function resetHeaderUI() {
+            const authButtons = document.getElementById('auth-buttons');
+            const userProfile = document.getElementById('user-profile');
+
+            authButtons.classList.remove('hidden');
+            userProfile.classList.add('hidden');
+            userProfile.classList.remove('flex');
+            sessionStorage.removeItem('userName');
+        }
+
+        function toggleProfileDropdown(event) {
+            event.stopPropagation(); // Prevent the click from bubbling up to the window
+            const dropdown = document.getElementById('profile-dropdown');
+            const button = document.getElementById('user-name-button');
+            const isVisible = dropdown.classList.toggle('show');
+            button.classList.toggle('open', isVisible);
+        }
+
+        // Close dropdown if clicked outside
+        window.onclick = function(event) {
+            const dropdown = document.getElementById('profile-dropdown');
+            if (dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
+                document.getElementById('user-name-button').classList.remove('open');
+            }
+        }
+
+        // --- MODAL & UI LOGIC ---
+
+        function toggleChatWindow() {
+            const chat = document.getElementById('chat-window');
+            if (chat.classList.contains('hidden')) {
+                chat.classList.remove('hidden');
+            } else {
+                chat.classList.add('hidden');
+            }
+        }
+
+        function closeModal(event) {
+            if (!event || event.target === event.currentTarget) {
+                document.getElementById('modal-container').innerHTML = '';
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            const colors = type === 'success' ? 'from-green-500 to-green-600' : 'from-blue-500 to-blue-600';
+            const notif = document.createElement('div');
+            notif.className = `fixed top-4 right-4 bg-gradient-to-r ${colors} text-white px-6 py-4 rounded-xl shadow-2xl z-[100] transform transition-all duration-500 translate-x-full border border-white/20 backdrop-blur-md`;
+            notif.innerHTML = `<div class="flex items-center gap-3 font-semibold"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>${message}</div>`;
+            document.body.appendChild(notif);
+            
+            // Animation In
+            setTimeout(() => notif.classList.remove('translate-x-full'), 100);
+            
+            // Remove
+            setTimeout(() => {
+                notif.classList.add('translate-x-full');
+                setTimeout(() => notif.remove(), 500);
+            }, 3000);
+        }
+
+        // --- MODAL TEMPLATES ---
+
+        function showServiceInfo(serviceType) {
+            const serviceInfo = {
+                'evacuator': { title: 'ევაკუატორის სერვისი', icon: 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4', desc: '24/7 ევაკუატორის სერვისი საქართველოს ნებისმიერ წერტილში', price: 'დან 50₾' },
+                'detailing': { title: 'დითეილინგ სერვისი', icon: 'M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', desc: 'პროფესიონალური წმენდა და მოვლა', price: 'დან 100₾' },
+                'diagnostics': { title: 'დიაგნოსტიკა', icon: 'M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z', desc: 'სრული კომპიუტერული დიაგნოსტიკა', price: 'დან 40₾' },
+                'oil-change': { title: 'ზეთის შეცვლა', icon: 'M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z', desc: 'სწრაფი და ხარისხიანი სერვისი', price: 'დან 60₾' },
+                'tires': { title: 'საბურავების სერვისი', icon: 'M12 0C8.74 0 8.333.015 7.053.072', desc: 'მობილური ვულკანიზაცია', price: 'დან 30₾' },
+                'import-package': { title: 'იმპორტის პაკეტი', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', desc: 'სრული მომსახურება ჩამოყვანილი მანქანებისთვის', price: 'შეთანხმებით' }
+            };
+
+            const info = serviceInfo[serviceType];
+
+            const html = `
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" onclick="closeModal(event)">
+                <div class="glass-heavy rounded-2xl max-w-2xl w-full p-8 text-white shadow-2xl animate-fade-in relative border border-white/10" onclick="event.stopPropagation()">
+                    <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+                    
+                    <div class="flex items-start gap-6 mb-8">
+                        <div class="p-4 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/30">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${info.icon}"/></svg>
+                        </div>
+                        <div>
+                            <h2 class="text-3xl font-bold mb-2">${info.title}</h2>
+                            <p class="text-gray-300 text-lg">${info.desc}</p>
+                            <div class="mt-4 inline-block bg-green-500/20 text-green-400 px-4 py-1 rounded-full text-sm font-bold border border-green-500/30">
+                                ${info.price}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button onclick="closeModal(); showOrderModal('${serviceType}')" class="btn-primary py-4 px-6 rounded-xl font-bold text-white text-center shadow-lg">
+                            შეკვეთის გაფორმება
+                        </button>
+                        <button onclick="closeModal()" class="glass bg-white/5 py-4 px-6 rounded-xl font-bold text-white hover:bg-white/10 transition border border-white/20">
+                            დახურვა
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+            document.getElementById('modal-container').innerHTML = html;
+        }
+
+        function showOrderModal(serviceType) {
+            const html = `
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" onclick="closeModal(event)">
+                <div class="glass-heavy rounded-2xl max-w-md w-full p-8 text-white shadow-2xl relative border border-white/10" onclick="event.stopPropagation()">
+                    <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+                    <h2 class="text-2xl font-bold mb-6">შეკვეთის გაფორმება</h2>
+                    
+                    <form onsubmit="handleOrderSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="text-sm text-gray-300 mb-1 block">სახელი</label>
+                            <input type="text" required class="w-full bg-black/40 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-300 mb-1 block">ტელეფონი</label>
+                            <input type="tel" required class="w-full bg-black/40 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                        </div>
+                        <button type="submit" class="w-full btn-primary py-3 rounded-xl font-bold mt-4 shadow-lg">გაგზავნა</button>
+                    </form>
+                </div>
+            </div>`;
+            document.getElementById('modal-container').innerHTML = html;
+        }
+
+        function showPartnerModal() {
+            const html = `
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" onclick="closeModal(event)">
+                <div class="glass-heavy rounded-2xl max-w-md w-full p-8 text-white shadow-2xl relative border border-white/10" onclick="event.stopPropagation()">
+                    <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+                    
+                    <div class="flex bg-black/40 p-1 rounded-xl mb-6">
+                        <button onclick="closeModal(); showRegisterModal()" class="flex-1 text-gray-400 hover:text-white py-2 text-sm font-medium transition">მომხმარებელი</button>
+                        <button class="flex-1 bg-blue-600 rounded-lg py-2 text-sm font-bold shadow-lg">პარტნიორი</button>
+                    </div>
+
+                    <h2 class="text-2xl font-bold mb-6">გახდი პარტნიორი</h2>
+                    <form onsubmit="handlePartnerSubmit(event)" class="space-y-4">
+                         <div>
+                            <label class="text-sm text-gray-300 mb-1 block">კომპანიის სახელი</label>
+                            <input type="text" required class="w-full bg-black/40 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                        </div>
+                         <div>
+                            <label class="text-sm text-gray-300 mb-1 block">საიდენტიფიკაციო კოდი</label>
+                            <input type="text" required class="w-full bg-black/40 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-500 py-3 rounded-xl font-bold mt-4 shadow-lg transition">რეგისტრაცია</button>
+                    </form>
+
+                    <div class="mt-6 text-center">
+                        <p class="text-gray-400 text-sm">უკვე გაქვს ანგარიში? <button onclick="closeModal(); showLoginModal()" class="text-blue-400 hover:text-blue-300 font-bold ml-1">შესვლა</button></p>
+                    </div>
+                </div>
+            </div>`;
+            document.getElementById('modal-container').innerHTML = html;
+        }
+
+        function showLoginModal() {
+             const html = `
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" onclick="closeModal(event)">
+                <div class="glass-heavy rounded-2xl max-w-sm w-full p-8 text-white shadow-2xl relative border border-white/10" onclick="event.stopPropagation()">
+                    <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+                    
+                    <div class="flex bg-black/40 p-1 rounded-xl mb-6">
+                        <button class="flex-1 bg-blue-600 rounded-lg py-2 text-sm font-bold shadow-lg">მომხმარებელი</button>
+                        <button onclick="closeModal(); showPartnerModal()" class="flex-1 text-gray-400 hover:text-white py-2 text-sm font-medium transition">პარტნიორი</button>
+                    </div>
+
+                    <h2 class="text-2xl font-bold mb-6 text-center">სისტემაში შესვლა</h2>
+                    <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                        <input type="email" placeholder="ელ. ფოსტა" required class="w-full bg-black/40 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                        <input type="password" placeholder="პაროლი" required class="w-full bg-black/40 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                        <button type="submit" class="w-full btn-primary py-3 rounded-xl font-bold shadow-lg">შესვლა</button>
+                    </form>
+
+                    <div class="flex items-center my-6">
+                        <div class="flex-grow border-t border-white/10"></div>
+                        <span class="mx-4 text-xs text-gray-400">ან</span>
+                        <div class="flex-grow border-t border-white/10"></div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <button class="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-3 transition">
+                            <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.651-3.657-11.303-8H6.306C9.656,35.663,16.318,40,24,40z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C41.38,36.128,44,30.638,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
+                            <span class="font-semibold text-sm text-white">შესვლა Gmail-ით</span>
+                        </button>
+                        <button class="w-full flex items-center justify-center gap-3 bg-[#1877F2] hover:bg-[#166bda] rounded-xl py-3 transition">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v7.028C18.343 21.128 22 16.991 22 12z"></path></svg>
+                            <span class="font-semibold text-sm text-white">შესვლა Facebook-ით</span>
+                        </button>
+                    </div>
+
+                    <div class="mt-6 text-center">
+                        <p class="text-gray-400 text-sm">ჯერ არ ხარ დარეგისტრირებული? <button onclick="closeModal(); showRegisterModal()" class="text-blue-400 hover:text-blue-300 font-bold ml-1">რეგისტრაცია</button></p>
+                    </div>
+                </div>
+            </div>`;
+            document.getElementById('modal-container').innerHTML = html;
+        }
+
+        function showRegisterModal() {
+             const html = `
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" onclick="closeModal(event)">
+                <div class="glass-heavy rounded-2xl max-w-sm w-full p-8 text-white shadow-2xl relative border border-white/10" onclick="event.stopPropagation()">
+                    <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+                    
+                    <div class="flex bg-black/40 p-1 rounded-xl mb-6">
+                        <button class="flex-1 bg-blue-600 rounded-lg py-2 text-sm font-bold shadow-lg">მომხმარებელი</button>
+                        <button onclick="closeModal(); showPartnerModal()" class="flex-1 text-gray-400 hover:text-white py-2 text-sm font-medium transition">პარტნიორი</button>
+                    </div>
+
+                    <h2 class="text-2xl font-bold mb-6 text-center">რეგისტრაცია</h2>
+                    <form onsubmit="handleRegisterSubmit(event)" class="space-y-4">
+                        <input type="text" placeholder="სახელი, გვარი" required class="w-full bg-black/40 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                        <input type="email" placeholder="ელ. ფოსტა" required class="w-full bg-black/40 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                        <input type="password" placeholder="პაროლი" required class="w-full bg-black/40 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                        <button type="submit" class="w-full btn-primary py-3 rounded-xl font-bold shadow-lg">შექმენი ანგარიში</button>
+                    </form>
+
+                    <div class="flex items-center my-6">
+                        <div class="flex-grow border-t border-white/10"></div>
+                        <span class="mx-4 text-xs text-gray-400">ან</span>
+                        <div class="flex-grow border-t border-white/10"></div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <button class="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-3 transition">
+                            <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.651-3.657-11.303-8H6.306C9.656,35.663,16.318,40,24,40z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C41.38,36.128,44,30.638,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
+                            <span class="font-semibold text-sm text-white">დარეგისტრირდი Gmail-ით</span>
+                        </button>
+                        <button class="w-full flex items-center justify-center gap-3 bg-[#1877F2] hover:bg-[#166bda] rounded-xl py-3 transition">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v7.028C18.343 21.128 22 16.991 22 12z"></path></svg>
+                            <span class="font-semibold text-sm text-white">დარეგისტრირდი Facebook-ით</span>
+                        </button>
+                    </div>
+
+                    <div class="mt-6 text-center">
+                        <p class="text-gray-400 text-sm">უკვე გაქვს ანგარიში? <button onclick="closeModal(); showLoginModal()" class="text-blue-400 hover:text-blue-300 font-bold ml-1">შესვლა</button></p>
+                    </div>
+                </div>
+            </div>`;
+            document.getElementById('modal-container').innerHTML = html;
+        }
+
+        function showAnalytics() {
+            const html = `
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" onclick="closeModal(event)">
+                <div class="glass-heavy rounded-2xl max-w-lg w-full p-8 text-white shadow-2xl relative border border-white/10 text-center" onclick="event.stopPropagation()">
+                    <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+                    <h2 class="text-2xl font-bold mb-6">სტატისტიკა</h2>
+                    <div class="bg-gradient-to-r from-green-500 to-emerald-600 p-6 rounded-2xl shadow-lg mb-4">
+                         <div class="text-sm opacity-80 mb-1">პოტენციური შემოსავალი</div>
+                         <div class="text-4xl font-bold">44,250₾/თვე</div>
+                    </div>
+                    <p class="text-gray-400 text-sm">დეტალური ანალიტიკა ხელმისაწვდომია პარტნიორის კაბინეტში.</p>
+                </div>
+            </div>`;
+            document.getElementById('modal-container').innerHTML = html;
+        }
+
+        // --- HANDLERS ---
+        function handleOrderSubmit(e) { e.preventDefault(); closeModal(); showNotification('შეკვეთა მიღებულია! მალე დაგიკავშირდებით.'); }
+        function handlePartnerSubmit(e) { e.preventDefault(); closeModal(); showNotification('განაცხადი გაგზავნილია! განხილვა 24სთ.'); }        
+        function handleLoginSubmit(e) { 
+            e.preventDefault(); 
+            const email = e.target.querySelector('input[type="email"]').value;
+            const name = email.split('@')[0]; // Use email part as a name for demo
+            sessionStorage.setItem('userName', name);
+            updateHeaderUI(name);
+            closeModal(); 
+            showNotification('წარმატებული ავტორიზაცია'); 
+        }
+        function handleRegisterSubmit(e) { 
+            e.preventDefault(); 
+            const name = e.target.querySelector('input[type="text"]').value;
+            sessionStorage.setItem('userName', name);
+            updateHeaderUI(name);
+            closeModal(); 
+            showNotification('რეგისტრაცია დასრულდა. მოგესალმებით!'); 
+        }
+        function handleLogout() { 
+            resetHeaderUI(); 
+            showNotification('თქვენ გამოხვედით სისტემიდან', 'info'); 
+            window.location.href = 'luka.html'; // Redirect to home to ensure clean state
+        }
+        function changeLanguage(lang) { showNotification(`ენა შეცვლილია: ${lang}`, 'info'); }
+
+    </script>
+</body>
+</html>
